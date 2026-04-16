@@ -1,12 +1,36 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const AppointmentsContext = createContext();
 
 export function AppointmentsProvider({ children }) {
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState(() => {
+    const savedAppts = localStorage.getItem("docbridge_appointments");
+    return savedAppts ? JSON.parse(savedAppts) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("docbridge_appointments", JSON.stringify(appointments));
+  }, [appointments]);
+
+  const clearCancelledAppointments = () => {
+    const hasCancelled = appointments.some(a => a.status === "Cancelled");
+    
+    if (!hasCancelled) {
+      alert("No cancelled appointments to clear.");
+      return;
+    }
+
+    if (window.confirm("Are you sure you want to clear all cancelled appointment records? This will not affect your confirmed bookings.")) {
+      setAppointments((prev) => prev.filter((a) => a.status !== "Cancelled"));
+    }
+  };
 
   const addAppointment = (appt) => {
     setAppointments((prev) => [...prev, { ...appt, id: Date.now() }]);
+  };
+
+  const deleteAppointment = (id) => {
+    setAppointments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const cancelAppointment = (id) => {
@@ -21,6 +45,8 @@ export function AppointmentsProvider({ children }) {
         appointments,
         addAppointment,
         cancelAppointment,
+        deleteAppointment,
+        clearCancelledAppointments, 
         appointmentsCount: appointments.filter((a) => a.status !== "Cancelled").length,
       }}
     >

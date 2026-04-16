@@ -1,3 +1,34 @@
+// src/data/doctors.jsx
+
+const generateDynamicSlots = () => {
+  const slots = {};
+  const today = new Date();
+  const masterTimes = [
+    "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", 
+    "11:00 AM", "11:30 AM", "12:00 PM", "02:00 PM", 
+    "02:30 PM", "03:00 PM", "03:30 PM", "04:00 PM", 
+    "04:30 PM", "05:00 PM"
+  ];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    const dateKey = d.toISOString().split("T")[0];
+
+    const slotCount = Math.floor(Math.random() * 5) + 4; 
+    
+    const daySlots = [...masterTimes]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, slotCount)       
+      .sort((a, b) => {                
+        return masterTimes.indexOf(a) - masterTimes.indexOf(b);
+      });
+
+    slots[dateKey] = daySlots;
+  }
+  return slots;
+};
+
 export const doctors = [
   {
     id: 1,
@@ -17,11 +48,7 @@ export const doctors = [
       "Dr. Priya Sharma is a board-certified cardiologist with expertise in interventional cardiology, heart failure management, and preventive cardiology. She has performed over 2,000 cardiac procedures.",
     languages: ["English", "Hindi"],
     education: "AIIMS Delhi, DM Cardiology",
-    slots: {
-      "2025-04-12": ["09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM", "03:00 PM"],
-      "2025-04-13": ["10:00 AM", "11:00 AM", "04:00 PM", "05:00 PM"],
-      "2025-04-14": ["09:00 AM", "12:00 PM", "03:00 PM"],
-    },
+    slots: generateDynamicSlots(),
   },
   {
     id: 2,
@@ -41,11 +68,7 @@ export const doctors = [
       "Dr. Arjun Mehta specializes in cosmetic and medical dermatology, treating conditions like acne, eczema, psoriasis, and performing advanced skin rejuvenation procedures.",
     languages: ["English", "Hindi", "Marathi"],
     education: "KEM Hospital Mumbai, MD Dermatology",
-    slots: {
-      "2025-04-12": ["10:00 AM", "11:00 AM", "04:30 PM", "05:00 PM"],
-      "2025-04-13": ["09:00 AM", "10:00 AM", "11:00 AM", "03:00 PM"],
-      "2025-04-14": ["10:00 AM", "02:00 PM", "04:00 PM"],
-    },
+    slots: generateDynamicSlots(),
   },
   {
     id: 3,
@@ -65,11 +88,7 @@ export const doctors = [
       "Dr. Kavita Nair is a renowned obstetrician and gynecologist with special interest in high-risk pregnancies, laparoscopic surgery, and women's reproductive health.",
     languages: ["English", "Hindi", "Kannada", "Malayalam"],
     education: "JIPMER, MS Obstetrics & Gynecology",
-    slots: {
-      "2025-04-12": ["10:00 AM", "11:30 AM", "03:00 PM"],
-      "2025-04-13": ["09:00 AM", "10:00 AM", "11:00 AM", "02:00 PM"],
-      "2025-04-14": ["10:00 AM", "12:00 PM", "04:00 PM"],
-    },
+    slots: generateDynamicSlots(),
   },
   {
     id: 4,
@@ -89,11 +108,7 @@ export const doctors = [
       "Dr. Rahul Gupta is an orthopedic surgeon specializing in joint replacement surgery, sports injuries, and spine disorders. He uses minimally invasive techniques for faster recovery.",
     languages: ["English", "Hindi"],
     education: "Maulana Azad Medical College, MS Orthopedics",
-    slots: {
-      "2025-04-12": ["09:00 AM", "10:00 AM", "05:00 PM"],
-      "2025-04-13": ["11:00 AM", "02:00 PM", "04:00 PM", "05:00 PM"],
-      "2025-04-14": ["09:00 AM", "10:00 AM", "03:00 PM"],
-    },
+    slots: generateDynamicSlots(),
   },
   {
     id: 5,
@@ -113,11 +128,7 @@ export const doctors = [
       "Dr. Sunita Rao is a neurologist with expertise in epilepsy, stroke management, headache disorders, and neurodegenerative diseases like Parkinson's and Alzheimer's.",
     languages: ["English", "Hindi", "Kannada"],
     education: "NIMHANS Bangalore, DM Neurology",
-    slots: {
-      "2025-04-15": ["11:00 AM", "12:00 PM", "03:00 PM"],
-      "2025-04-16": ["09:00 AM", "10:00 AM", "04:00 PM"],
-      "2025-04-17": ["11:00 AM", "02:00 PM"],
-    },
+    slots: generateDynamicSlots(),
   },
   {
     id: 6,
@@ -137,11 +148,7 @@ export const doctors = [
       "Dr. Vikram Singh is a compassionate pediatrician specializing in child development, vaccinations, neonatal care, and management of childhood illnesses and allergies.",
     languages: ["English", "Hindi", "Telugu"],
     education: "Osmania Medical College, MD Pediatrics",
-    slots: {
-      "2025-04-12": ["09:00 AM", "10:00 AM", "11:00 AM", "03:00 PM", "04:00 PM"],
-      "2025-04-13": ["10:00 AM", "11:00 AM", "02:00 PM"],
-      "2025-04-14": ["09:00 AM", "11:00 AM", "03:00 PM", "05:00 PM"],
-    },
+    slots: generateDynamicSlots(),
   },
 ];
 

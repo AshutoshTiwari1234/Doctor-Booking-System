@@ -11,7 +11,7 @@ const getDateLabel = (dateStr) => {
 
 export default function MyAppointments() {
   const navigate = useNavigate();
-  const { appointments, cancelAppointment } = useAppointments();
+  const { appointments, cancelAppointment, clearCancelledAppointments, deleteAppointment } = useAppointments();
   const [filter, setFilter] = useState("all");
   const [cancelId, setCancelId] = useState(null);
 
@@ -30,6 +30,8 @@ export default function MyAppointments() {
     cancelAppointment(id);
     setCancelId(null);
   };
+
+  const hasCancelled = appointments.some(a => a.status === "Cancelled");
 
   if (appointments.length === 0) {
     return (
@@ -68,7 +70,6 @@ export default function MyAppointments() {
       </div>
 
       <div className="appts-inner">
-        {/* STATS */}
         <div className="appts-stats">
           <div className="astat-card card">
             <div className="astat-icon">📊</div>
@@ -87,16 +88,37 @@ export default function MyAppointments() {
           </div>
         </div>
 
-        {/* FILTER TABS */}
-        <div className="filter-tabs">
-          {["all", "confirmed", "cancelled"].map((f) => (
-            <button key={f} className={`filter-tab ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
-              {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+        <div className="appts-controls" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          gap: '1rem'
+        }}>
+          <div className="filter-tabs" style={{ marginBottom: 0 }}>
+            {["all", "confirmed", "cancelled"].map((f) => (
+              <button 
+                key={f} 
+                className={`filter-tab ${filter === f ? "active" : ""}`} 
+                onClick={() => setFilter(f)}
+              >
+                {f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          {hasCancelled && (
+            <button 
+              className="btn btn-outline btn-sm" 
+              onClick={clearCancelledAppointments}
+              style={{ borderColor: 'var(--gray-200)', color: 'var(--gray-600)' }}
+            >
+              🗑️ Clear Cancelled
             </button>
-          ))}
+          )}
         </div>
 
-        {/* LIST */}
         {filtered.length === 0 ? (
           <div className="card" style={{ padding: 40, textAlign: "center", color: "var(--gray-600)" }}>
             <p>No {filter} appointments found.</p>
@@ -151,15 +173,39 @@ export default function MyAppointments() {
                   <div className="appt-fee">₹{appt.doctor?.fee}</div>
                   <div className="appt-fee-label">Consultation</div>
                   <div className="appt-id">ID: {appt.bookingId}</div>
-                  {appt.status === "Confirmed" && (
-                    <button
-                      className="btn btn-danger btn-sm"
-                      style={{ marginTop: 12, width: "100%", justifyContent: "center" }}
-                      onClick={() => setCancelId(appt.id)}
-                    >
-                      Cancel
-                    </button>
-                  )}
+                  
+                  <div className="appt-actions-row" style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                    {appt.status === "Confirmed" && (
+                      <button
+                        className="btn btn-danger btn-sm"
+                        style={{ flex: 1, justifyContent: "center" }}
+                        onClick={() => setCancelId(appt.id)}
+                      >
+                        Cancel
+                      </button>
+                    )}
+
+                    {appt.status === "Cancelled" && (
+                      <button
+                        className="btn btn-outline btn-sm"
+                        style={{ 
+                          padding: '8px', 
+                          borderColor: 'var(--gray-200)', 
+                          color: 'var(--red)',
+                          minWidth: '40px',
+                          justifyContent: 'center'
+                        }}
+                        onClick={() => {
+                          if(window.confirm("Delete this record permanently?")) {
+                            deleteAppointment(appt.id);
+                          }
+                        }}
+                        title="Delete Record"
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -171,7 +217,6 @@ export default function MyAppointments() {
         </div>
       </div>
 
-      {/* CANCEL MODAL */}
       {cancelId && (
         <div className="modal-overlay" onClick={() => setCancelId(null)}>
           <div className="modal-box card animate-fade-up" onClick={(e) => e.stopPropagation()}>
