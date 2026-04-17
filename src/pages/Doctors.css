@@ -1,12 +1,17 @@
 .doctors-page { min-height: 80vh; }
 
 .doctors-header {
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+  background: linear-gradient(90deg, #2A6FBC, #2F7FB5, #1F8A8C);
   padding: 60px 24px 40px;
 }
-.doctors-header-inner { max-width: 1200px; margin: 0 auto; color: white; }
+.doctors-header-inner { max-width: 1200px; margin: 0 auto; color: white; text-align: center; }
 .doctors-header .section-title { color: white; margin-bottom: 8px; }
-.doctors-header .section-subtitle { color: rgba(255,255,255,0.65); }
+.doctors-header .section-subtitle {
+  text-align: center;
+  margin: 0 auto;
+  max-width: 760px;
+  color: rgba(255,255,255,0.85);
+}
 
 .doctors-layout {
   max-width: 1200px;
