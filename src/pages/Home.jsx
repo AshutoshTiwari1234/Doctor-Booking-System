@@ -1,8 +1,21 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { doctors } from "../data/doctors";
 import "./Home.css";
 
-const stats = [
+export default function Home() {
+  const navigate = useNavigate();
+
+  const handleNavigate = (p, data = null) => {
+    if (p === "book" && data) {
+      navigate("/book", { state: { doctor: data } });
+    } else {
+      navigate(p === "home" ? "/" : "/" + p);
+    }
+    window.scrollTo(0, 0);
+  };
+
+  const stats = [
   { value: "50+", label: "Specialist Doctors" },
   { value: "10k+", label: "Happy Patients" },
   { value: "15+", label: "Specialties" },
@@ -43,8 +56,7 @@ const specialtiesGrid = [
   { icon: "🦷", name: "Dentistry", count: "6 Doctors" },
 ];
 
-export default function Home({ navigate }) {
-  const topDoctors = doctors.slice(0, 3);
+const topDoctors = doctors.slice(0, 3);
 
   return (
     <div className="home">
@@ -68,10 +80,10 @@ export default function Home({ navigate }) {
               Connect with India's top specialists in minutes. Book appointments, manage your health journey, and get expert care — all in one place.
             </p>
             <div className="hero-actions">
-              <button className="btn btn-primary btn-lg" onClick={() => navigate("doctors")}>
+              <button className="btn btn-primary btn-lg" onClick={() => handleNavigate("doctors")}>
                 Find a Doctor →
               </button>
-              <button className="btn btn-ghost btn-lg" onClick={() => navigate("appointments")}>
+              <button className="btn btn-ghost btn-lg" onClick={() => handleNavigate("appointments")}>
                 My Appointments
               </button>
             </div>
@@ -144,7 +156,7 @@ export default function Home({ navigate }) {
               <div
                 className="specialty-card card"
                 key={i}
-                onClick={() => navigate("doctors")}
+onClick={() => handleNavigate("doctors")}
                 style={{ animationDelay: `${i * 0.07}s` }}
               >
                 <div className="sp-icon">{sp.icon}</div>
@@ -164,7 +176,7 @@ export default function Home({ navigate }) {
               <div className="section-label">⭐ Top Rated</div>
               <h2 className="section-title">Meet Our Doctors</h2>
             </div>
-            <button className="btn btn-outline" onClick={() => navigate("doctors")}>
+            <button className="btn btn-outline" onClick={() => handleNavigate("doctors")}>
               View All →
             </button>
           </div>
@@ -199,7 +211,7 @@ export default function Home({ navigate }) {
                   <button
                     className="btn btn-primary btn-sm"
                     style={{ width: "100%", justifyContent: "center" }}
-                    onClick={() => navigate("book", doc)}
+                    onClick={() => handleNavigate("book", doc)}
                   >
                     Book Appointment
                   </button>

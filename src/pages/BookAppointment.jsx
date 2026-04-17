@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAppointments } from "../context/AppointmentsContext";
 import "./BookAppointment.css";
 
 const reasons = [
@@ -36,7 +38,12 @@ const getDemoSlots = () => {
   return slots;
 };
 
-export default function BookAppointment({ doctor, navigate, addAppointment }) {
+export default function BookAppointment() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { addAppointment } = useAppointments();
+  const doctor = location.state?.doctor;
+
   if (!doctor) {
     return (
       <div className="book-page">
@@ -45,12 +52,17 @@ export default function BookAppointment({ doctor, navigate, addAppointment }) {
             <div style={{ fontSize: "3rem", marginBottom: 16 }}>⚠️</div>
             <h2 style={{ color: "var(--navy)", marginBottom: 8 }}>No Doctor Selected</h2>
             <p style={{ color: "var(--gray-600)", marginBottom: 24 }}>Please go back and select a doctor first.</p>
-            <button className="btn btn-primary" onClick={() => navigate("doctors")}>Browse Doctors →</button>
+            <button className="btn btn-primary" onClick={() => navigate("/doctors")}>Browse Doctors →</button>
           </div>
         </div>
       </div>
     );
   }
+
+  const handleNavigate = (p) => {
+    navigate(p === "home" ? "/" : "/" + p);
+    window.scrollTo(0, 0);
+  };
 
   const allSlots = doctor.slots || getDemoSlots();
   const availableDates = Object.keys(allSlots).sort();
@@ -137,8 +149,8 @@ export default function BookAppointment({ doctor, navigate, addAppointment }) {
               </div>
             </div>
             <div className="success-actions">
-              <button className="btn btn-primary" onClick={() => navigate("appointments")}>View My Appointments →</button>
-              <button className="btn btn-outline" onClick={() => navigate("doctors")}>Book Another</button>
+              <button className="btn btn-primary" onClick={() => handleNavigate("appointments")}>View My Appointments →</button>
+              <button className="btn btn-outline" onClick={() => handleNavigate("doctors")}>Book Another</button>
             </div>
           </div>
         </div>

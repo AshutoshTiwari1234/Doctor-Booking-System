@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppointments } from "../context/AppointmentsContext";
 import "./MyAppointments.css";
 
 const getDateLabel = (dateStr) => {
@@ -7,9 +9,16 @@ const getDateLabel = (dateStr) => {
   return d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
 };
 
-export default function MyAppointments({ appointments, navigate, cancelAppointment }) {
+export default function MyAppointments() {
+  const navigate = useNavigate();
+  const { appointments, cancelAppointment } = useAppointments();
   const [filter, setFilter] = useState("all");
   const [cancelId, setCancelId] = useState(null);
+
+  const handleNavigate = (p) => {
+    navigate(p === "home" ? "/" : "/" + p);
+    window.scrollTo(0, 0);
+  };
 
   const filtered = appointments.filter((a) => {
     if (filter === "confirmed") return a.status === "Confirmed";
@@ -36,7 +45,7 @@ export default function MyAppointments({ appointments, navigate, cancelAppointme
             <div className="ae-icon">🗓️</div>
             <h2>No Appointments Yet</h2>
             <p>You haven't booked any appointments yet. Find a doctor and schedule your first consultation today!</p>
-            <button className="btn btn-primary btn-lg" onClick={() => navigate("doctors")}>
+            <button className="btn btn-primary btn-lg" onClick={() => handleNavigate("doctors")}>
               Find a Doctor →
             </button>
           </div>
@@ -158,7 +167,7 @@ export default function MyAppointments({ appointments, navigate, cancelAppointme
         )}
 
         <div className="appts-cta">
-          <button className="btn btn-primary" onClick={() => navigate("doctors")}>+ Book New Appointment</button>
+          <button className="btn btn-primary" onClick={() => handleNavigate("doctors")}>+ Book New Appointment</button>
         </div>
       </div>
 

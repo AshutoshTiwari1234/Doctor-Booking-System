@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "./Navbar.css";
 
-export default function Navbar({ page, navigate, appointmentCount }) {
+export default function Navbar({ page, appointmentCount }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const currentPage = () => {
+    const path = location.pathname.replace("/", "");
+    if (!path) return "home";
+    if (path === "doctors") return "doctors";
+    if (path === "book") return "book";
+    if (path === "appointments") return "appointments";
+    return "home";
+  };
+
+  const handleNavigate = (p) => {
+    navigate(p === "home" ? "/" : "/" + p);
+    window.scrollTo(0, 0);
+  };
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -20,7 +37,7 @@ export default function Navbar({ page, navigate, appointmentCount }) {
   return (
     <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
       <div className="navbar-inner">
-        <div className="navbar-logo" onClick={() => navigate("home")}>
+        <div className="navbar-logo" onClick={() => handleNavigate("home")}>
           <div className="logo-icon">
             <span>+</span>
           </div>
@@ -34,8 +51,8 @@ export default function Navbar({ page, navigate, appointmentCount }) {
           {links.map((l) => (
             <button
               key={l.key}
-              className={`nav-link ${page === l.key ? "active" : ""}`}
-              onClick={() => { navigate(l.key); setMenuOpen(false); }}
+              className={`nav-link ${currentPage() === l.key ? "active" : ""}`}
+              onClick={() => { handleNavigate(l.key); setMenuOpen(false); }}
             >
               {l.label}
               {l.key === "appointments" && appointmentCount > 0 && (
@@ -43,7 +60,7 @@ export default function Navbar({ page, navigate, appointmentCount }) {
               )}
             </button>
           ))}
-          <button className="btn btn-primary btn-sm nav-cta" onClick={() => { navigate("doctors"); setMenuOpen(false); }}>
+          <button className="btn btn-primary btn-sm nav-cta" onClick={() => { handleNavigate("doctors"); setMenuOpen(false); }}>
             Book Now
           </button>
         </div>

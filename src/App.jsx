@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useAppointments } from "./context/AppointmentsContext";
 import Home from "./pages/Home";
 import Doctors from "./pages/Doctors";
 import BookAppointment from "./pages/BookAppointment";
@@ -7,42 +9,28 @@ import Navbar from "./components/Navbar";
 import "./App.css";
 
 export default function App() {
-  const [page, setPage] = useState("home");
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [appointments, setAppointments] = useState([]);
+  const location = useLocation();
+  const { appointmentsCount } = useAppointments();
 
-  const navigate = (p, data = null) => {
-    setPage(p);
-    if (data) setSelectedDoctor(data);
-    window.scrollTo(0, 0);
-  };
-
-  const addAppointment = (appt) => {
-    setAppointments((prev) => [...prev, { ...appt, id: Date.now() }]);
-  };
-
-  const cancelAppointment = (id) => {
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "Cancelled" } : a))
-    );
+  const getPage = () => {
+    const path = location.pathname.replace("/", "");
+    if (!path) return "home";
+    if (path === "doctors") return "doctors";
+    if (path === "book") return "book";
+    if (path === "appointments") return "appointments";
+    return "home";
   };
 
   return (
     <div className="app">
-      <Navbar page={page} navigate={navigate} appointmentCount={appointments.filter(a => a.status !== "Cancelled").length} />
+      <Navbar page={getPage()} appointmentCount={appointmentsCount} />
       <main className="main-content">
-        {page === "home" && <Home navigate={navigate} />}
-        {page === "doctors" && <Doctors navigate={navigate} />}
-        {page === "book" && (
-          <BookAppointment
-            doctor={selectedDoctor}
-            navigate={navigate}
-            addAppointment={addAppointment}
-          />
-        )}
-        {page === "appointments" && (
-          <MyAppointments appointments={appointments} navigate={navigate} cancelAppointment={cancelAppointment} />
-        )}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/doctors" element={<Doctors />} />
+          <Route path="/book" element={<BookAppointment />} />
+          <Route path="/appointments" element={<MyAppointments />} />
+        </Routes>
       </main>
     </div>
   );

@@ -1,13 +1,24 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { doctors, specialties } from "../data/doctors";
 import "./Doctors.css";
 
-export default function Doctors({ navigate }) {
+export default function Doctors() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [specialty, setSpecialty] = useState("All Specialties");
   const [availableOnly, setAvailableOnly] = useState(false);
   const [sortBy, setSortBy] = useState("rating");
   const [expandedId, setExpandedId] = useState(null);
+
+  const handleNavigate = (p, data = null) => {
+    if (p === "book" && data) {
+      navigate("/book", { state: { doctor: data } });
+    } else {
+      navigate("/" + p);
+    }
+    window.scrollTo(0, 0);
+  };
 
   const filtered = doctors
     .filter((d) => {
@@ -182,7 +193,7 @@ export default function Doctors({ navigate }) {
                   </button>
                   <button
                     className="btn btn-primary btn-sm"
-                    onClick={() => navigate("book", doc)}
+                    onClick={() => handleNavigate("book", doc)}
                   >
                     Book Appointment →
                   </button>
