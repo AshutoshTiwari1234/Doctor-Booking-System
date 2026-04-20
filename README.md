@@ -1,4 +1,4 @@
-# MediBook - Doctor Appointment Booking System
+# DocBridge - Doctor Appointment Booking System
 
 A modern healthcare appointment booking platform built with React, enabling patients to find doctors, book appointments, and manage their medical records, while giving doctors a comprehensive dashboard to manage their practice.
 
