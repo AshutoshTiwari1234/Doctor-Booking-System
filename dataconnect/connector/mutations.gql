@@ -1,0 +1,337 @@
+# ============================================================
+# GraphQL Mutations — Write operations for the Doctor Appointment app
+# Translated to SQL INSERT / UPDATE / DELETE by Data Connect
+# ============================================================
+
+# ──────────────────────────────────────────────────────────────
+# USER MUTATIONS
+# ──────────────────────────────────────────────────────────────
+
+# Create a new user profile after Firebase Auth registration
+mutation CreateUser(
+  $uid: String!
+  $name: String!
+  $email: String!
+  $role: String!
+  $phone: String
+  $approved: Boolean!
+) @auth(level: USER) {
+  user_insert(data: {
+    uid: $uid
+    name: $name
+    email: $email
+    role: $role
+    phone: $phone
+    approved: $approved
+  })
+}
+
+# Update user profile info
+mutation UpdateUser(
+  $uid: String!
+  $name: String
+  $phone: String
+) @auth(level: USER) {
+  user_updateMany(
+    where: { uid: { eq: $uid } }
+    data: { name: $name, phone: $phone }
+  )
+}
+
+# Admin: update user approval status
+mutation UpdateUserApproval($uid: String!, $approved: Boolean!) @auth(level: USER) {
+  user_updateMany(
+    where: { uid: { eq: $uid } }
+    data: { approved: $approved }
+  )
+}
+
+# ──────────────────────────────────────────────────────────────
+# DOCTOR MUTATIONS
+# ──────────────────────────────────────────────────────────────
+
+# Register a new doctor (created from Register page)
+mutation CreateDoctor(
+  $uid: String!
+  $name: String!
+  $email: String!
+  $specialty: String!
+  $hospital: String!
+  $location: String!
+  $experience: String
+  $fee: Int!
+  $about: String
+  $avatar: String
+  $color: String
+  $education: String
+  $languages: String
+) @auth(level: USER) {
+  doctor_insert(data: {
+    uid: $uid
+    name: $name
+    email: $email
+    specialty: $specialty
+    hospital: $hospital
+    location: $location
+    experience: $experience
+    fee: $fee
+    about: $about
+    avatar: $avatar
+    color: $color
+    education: $education
+    languages: $languages
+    rating: 0
+    reviewCount: 0
+    available: true
+    approved: false    # Must be approved by admin before accepting bookings
+  })
+}
+
+# Seed a static doctor (used to populate initial data from local array)
+mutation SeedDoctor(
+  $uid: String!
+  $name: String!
+  $email: String!
+  $specialty: String!
+  $hospital: String!
+  $location: String!
+  $experience: String
+  $fee: Int!
+  $about: String
+  $avatar: String
+  $color: String
+  $education: String
+  $languages: String
+  $rating: Float
+  $reviewCount: Int
+) @auth(level: USER) {
+  doctor_insert(data: {
+    uid: $uid
+    name: $name
+    email: $email
+    specialty: $specialty
+    hospital: $hospital
+    location: $location
+    experience: $experience
+    fee: $fee
+    about: $about
+    avatar: $avatar
+    color: $color
+    education: $education
+    languages: $languages
+    rating: $rating
+    reviewCount: $reviewCount
+    available: true
+    approved: true       # Seeded doctors are pre-approved
+  })
+}
+
+# Admin: approve or revoke a doctor's approval
+mutation ApproveDoctorByUid($uid: String!, $approved: Boolean!) @auth(level: USER) {
+  doctor_updateMany(
+    where: { uid: { eq: $uid } }
+    data: { approved: $approved }
+  )
+}
+
+# Doctor updates their own availability status
+mutation UpdateDoctorAvailability($uid: String!, $available: Boolean!) @auth(level: USER) {
+  doctor_updateMany(
+    where: { uid: { eq: $uid } }
+    data: { available: $available }
+  )
+}
+
+# Update doctor's average rating (called after a new review is submitted)
+mutation UpdateDoctorRating($uid: String!, $rating: Float!, $reviewCount: Int!) @auth(level: USER) {
+  doctor_updateMany(
+    where: { uid: { eq: $uid } }
+    data: { rating: $rating, reviewCount: $reviewCount }
+  )
+}
+
+# ──────────────────────────────────────────────────────────────
+# DOCTOR SLOT MUTATIONS
+# ──────────────────────────────────────────────────────────────
+
+# Doctor adds a new available time slot
+mutation AddDoctorSlot($doctorId: String!, $date: Date!, $time: String!) @auth(level: USER) {
+  doctorSlot_insert(data: {
+    doctorId: $doctorId
+    date: $date
+    time: $time
+    isBooked: false
+  })
+}
+
+# Mark a slot as booked (called during appointment booking to prevent double-booking)
+mutation MarkSlotBooked($slotId: UUID!) @auth(level: USER) {
+  doctorSlot_update(id: $slotId, data: { isBooked: true })
+}
+
+# Restore a slot when an appointment is cancelled
+mutation MarkSlotAvailable($slotId: UUID!) @auth(level: USER) {
+  doctorSlot_update(id: $slotId, data: { isBooked: false })
+}
+
+# Doctor removes a slot from their availability
+mutation DeleteSlot($slotId: UUID!) @auth(level: USER) {
+  doctorSlot_delete(id: $slotId)
+}
+
+# ──────────────────────────────────────────────────────────────
+# APPOINTMENT MUTATIONS
+# ──────────────────────────────────────────────────────────────
+
+# Book a new appointment (patient-facing)
+mutation BookAppointment(
+  $bookingId: String!
+  $token: Int
+  $patientId: String!
+  $doctorId: String!
+  $patientName: String!
+  $patientAge: Int
+  $patientGender: String
+  $patientPhone: String
+  $patientEmail: String
+  $doctorName: String!
+  $doctorSpecialty: String!
+  $doctorHospital: String
+  $doctorFee: Int
+  $date: Date!
+  $slot: String!
+  $reason: String
+  $notes: String
+) @auth(level: USER) {
+  appointment_insert(data: {
+    bookingId: $bookingId
+    token: $token
+    patientId: $patientId
+    doctorId: $doctorId
+    patientName: $patientName
+    patientAge: $patientAge
+    patientGender: $patientGender
+    patientPhone: $patientPhone
+    patientEmail: $patientEmail
+    doctorName: $doctorName
+    doctorSpecialty: $doctorSpecialty
+    doctorHospital: $doctorHospital
+    doctorFee: $doctorFee
+    date: $date
+    slot: $slot
+    reason: $reason
+    notes: $notes
+    status: "Confirmed"
+    reviewed: false
+  })
+}
+
+# Cancel an appointment (updates status to "Cancelled")
+mutation CancelAppointment($id: UUID!) @auth(level: USER) {
+  appointment_update(id: $id, data: { status: "Cancelled" })
+}
+
+# Doctor marks an appointment as completed
+mutation CompleteAppointment($id: UUID!) @auth(level: USER) {
+  appointment_update(id: $id, data: { status: "Completed" })
+}
+
+# Doctor accepts a pending appointment
+mutation AcceptAppointment($id: UUID!) @auth(level: USER) {
+  appointment_update(id: $id, data: { status: "Confirmed" })
+}
+
+# Doctor rejects/declines an appointment
+mutation RejectAppointment($id: UUID!) @auth(level: USER) {
+  appointment_update(id: $id, data: { status: "Rejected" })
+}
+
+# Update any appointment status (general purpose)
+mutation UpdateAppointmentStatus($id: UUID!, $status: String!) @auth(level: USER) {
+  appointment_update(id: $id, data: { status: $status })
+}
+
+# Mark appointment as reviewed (so patient can't review twice)
+mutation MarkAppointmentReviewed($id: UUID!) @auth(level: USER) {
+  appointment_update(id: $id, data: { reviewed: true })
+}
+
+# ──────────────────────────────────────────────────────────────
+# REVIEW MUTATIONS
+# ──────────────────────────────────────────────────────────────
+
+# Submit a patient review after a completed appointment
+mutation SubmitReview(
+  $appointmentId: UUID!
+  $patientId: String!
+  $doctorId: String!
+  $patientName: String
+  $rating: Int!
+  $comment: String
+) @auth(level: USER) {
+  review_insert(data: {
+    appointmentId: $appointmentId
+    patientId: $patientId
+    doctorId: $doctorId
+    patientName: $patientName
+    rating: $rating
+    comment: $comment
+  })
+}
+
+# ──────────────────────────────────────────────────────────────
+# NOTIFICATION MUTATIONS
+# ──────────────────────────────────────────────────────────────
+
+# Create a notification for a user
+mutation CreateNotification($userId: String!, $message: String!, $type: String!) @auth(level: USER) {
+  notification_insert(data: {
+    userId: $userId
+    message: $message
+    type: $type
+    read: false
+  })
+}
+
+# Mark a notification as read
+mutation MarkNotificationRead($id: UUID!) @auth(level: USER) {
+  notification_update(id: $id, data: { read: true })
+}
+
+# Mark all notifications as read for a user
+mutation MarkAllNotificationsRead($userId: String!) @auth(level: USER) {
+  notification_updateMany(
+    where: { userId: { eq: $userId }, read: { eq: false } }
+    data: { read: true }
+  )
+}
+
+# Add a new medical report metadata
+mutation AddMedicalReport(
+  $patientId: String!
+  $name: String!
+  $type: String!
+  $url: String!
+  $publicId: String
+  $format: String
+  $size: String
+  $pages: Int
+  $originalName: String
+) @auth(level: USER) {
+  medicalReport_insert(data: {
+    patientId: $patientId
+    name: $name
+    type: $type
+    url: $url
+    publicId: $publicId
+    format: $format
+    size: $size
+    pages: $pages
+    originalName: $originalName
+  })
+}
+
+# Delete a medical report
+mutation DeleteMedicalReport($id: UUID!) @auth(level: USER) {
+  medicalReport_delete(id: $id)
+}

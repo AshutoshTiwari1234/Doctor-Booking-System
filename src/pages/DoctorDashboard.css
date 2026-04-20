@@ -1,0 +1,429 @@
+/* ============================================================
+   Doctor Dashboard CSS
+   ============================================================ */
+
+/* ─── Page Header ─────────────────────────────────────────── */
+.dash-page { min-height: 100vh; background: var(--bg); }
+
+.dash-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--teal) 100%);
+  padding: 48px 0 32px;
+  color: rgb(93, 226, 44);
+}
+.dash-header-inner {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.dash-header .section-label { color: rgba(6, 7, 6, 0.75); }
+.dash-header .section-title { color: white; margin-top: 4px; }
+.dash-header .section-subtitle { color: rgba(255,255,255,0.75); margin-top: 6px; }
+
+/* ─── Inner Container ─────────────────────────────────────── */
+.dash-inner {
+  max-width: 1160px;
+  
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Stats Row ───────────────────────────────────────────── */
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.ds-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px;
+  text-align: center;
+  gap: 8px;
+}
+.ds-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+.ds-val { font-size: 2rem; font-weight: 800; color: var(--navy); }
+.ds-label { font-size: 0.82rem; color: var(--gray-500); font-weight: 500; }
+
+/* ─── Tabs ────────────────────────────────────────────────── */
+.dash-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dash-tab {
+  padding: 10px 20px;
+  border: 2px solid var(--gray-200);
+  border-radius: 50px;
+  background: var(--white);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.dash-tab:hover { border-color: var(--teal); color: var(--teal); }
+.dash-tab.active { background: var(--teal); border-color: var(--teal); color: white; }
+
+/* ─── Appointment Cards ───────────────────────────────────── */
+.dash-list { display: flex; flex-direction: column; gap: 12px; }
+
+.dash-appt-card {
+  display: grid;
+  grid-template-columns: 90px 1fr auto;
+  gap: 16px;
+  align-items: start;
+  padding: 20px 24px;
+}
+
+.dac-left { text-align: center; }
+.dac-time { font-size: 1rem; font-weight: 700; color: var(--teal); }
+.dac-date { font-size: 0.78rem; color: var(--gray-500); margin-top: 4px; }
+
+.dac-patient-name { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.dac-reason { font-size: 0.85rem; color: var(--gray-600); margin-bottom: 3px; }
+.dac-notes { font-size: 0.82rem; color: var(--gray-500); font-style: italic; margin-bottom: 3px; }
+.dac-contact { font-size: 0.78rem; color: var(--gray-400); margin-bottom: 4px; }
+.dac-id { font-size: 0.72rem; color: var(--gray-300); font-family: monospace; }
+
+.dac-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.dac-fee { font-size: 1.1rem; font-weight: 700; color: var(--navy); }
+.dac-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* ─── Empty State ─────────────────────────────────────────── */
+.dash-empty {
+  padding: 60px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.dash-empty h3 { color: var(--navy); }
+
+/* ─── Slot Manager ────────────────────────────────────────── */
+.slot-manager { padding: 32px; }
+
+.slot-add-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin: 24px 0;
+  flex-wrap: wrap;
+}
+.slot-add-row .form-group { flex: 1; min-width: 140px; }
+
+.slot-date-group { margin-bottom: 20px; }
+.slot-date-label {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+
+.slot-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 20px;
+  font-size: 0.83rem;
+  color: var(--teal);
+  font-weight: 500;
+}
+.slot-remove {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+}
+.slot-remove:hover { color: #b91c1c; }
+
+/* ─── Disabled Card ───────────────────────────────────────── */
+.disabled-card {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--gray-50) 0px,
+    var(--gray-50) 10px,
+    #ffffff 10px,
+    #ffffff 20px
+  ) !important;
+  border-color: var(--gray-200) !important;
+  opacity: 0.8 !important;
+}
+
+/* ─── Yellow badge ────────────────────────────────────────── */
+.badge-yellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+@media (max-width: 768px) {
+  .dash-appt-card { grid-template-columns: 1fr; }
+  .dac-right { align-items: flex-start; }
+  .dash-header-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* ─── Queue Position Badge on Appointment Card ───────────── */
+.dac-queue-num {
+  display: inline-block;
+  margin-top: 6px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+/* ─── Queue Panel ──────────────────────────────────────────── */
+.queue-panel { padding: 32px; }
+
+.queue-controls {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.queue-controls .form-group { flex: 1; min-width: 160px; }
+
+/* Summary counters */
+.queue-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.qs-item {
+  flex: 1;
+  min-width: 100px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid var(--gray-200);
+}
+.qs-item.green { background: #f0fdf4; border-color: #bbf7d0; }
+.qs-item.blue  { background: #eff6ff; border-color: #bfdbfe; }
+.qs-val  { font-size: 2rem; font-weight: 800; color: var(--navy); }
+.qs-label { font-size: 0.8rem; color: var(--gray-500); font-weight: 500; }
+
+/* Current patient highlight card */
+.queue-current-card {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 2px solid #4ade80;
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.qcc-badge {
+  display: inline-block;
+  background: #16a34a;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.qcc-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #15803d;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.qcc-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.qcc-detail {
+  font-size: 0.88rem;
+  color: var(--gray-600);
+}
+
+/* All done state */
+.queue-all-done {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray-500);
+}
+.queue-all-done h3 { color: var(--navy); margin-top: 8px; }
+
+/* Waiting list */
+.queue-list-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-400);
+  margin-bottom: 10px;
+}
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.queue-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--gray-200);
+  transition: var(--transition);
+}
+.queue-row-current {
+  background: #f0fdf4;
+  border-color: #4ade80;
+}
+.queue-row-done {
+  opacity: 0.5;
+  text-decoration: none;
+}
+.queue-row-waiting:hover {
+  border-color: var(--gray-300);
+}
+.qr-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--navy);
+  flex-shrink: 0;
+}
+.queue-row-current .qr-num { background: #4ade80; color: white; }
+.qr-info { flex: 1; }
+.qr-name { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+.qr-sub  { font-size: 0.8rem; color: var(--gray-500); margin-top: 2px; }
+
+/* ─── Slot Day Summary (Availability Tab) ─────────────────── */
+.slot-day-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+.sds-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sds-time {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--navy);
+  width: 90px;
+  flex-shrink: 0;
+}
+.sds-bar {
+  flex: 1;
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.sds-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.sds-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  width: 35px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ─── Toggle Switch ───────────────────────────────────────── */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ef4444; /* Red/off = Disabled */
+  transition: .3s;
+  border-radius: 24px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+input:checked + .toggle-slider {
+  background-color: #10b981; /* Green/on = Available */
+}
+input:checked + .toggle-slider:before {
+  transform: translateX(24px);
+}
+input:disabled + .toggle-slider {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.toggle-label-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gray-600);
+}

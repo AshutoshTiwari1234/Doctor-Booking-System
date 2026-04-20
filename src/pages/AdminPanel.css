@@ -1,0 +1,210 @@
+/* ============================================================
+   Admin Panel CSS
+   ============================================================ */
+
+.admin-page { min-height: 100vh; background: var(--bg); }
+
+/* ─── Header ──────────────────────────────────────────────── */
+.admin-header {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 48px 0 32px;
+  color: white;
+}
+.admin-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.admin-header .section-label { color: rgba(255,255,255,0.65); }
+.admin-header .section-title { color: white; }
+.admin-header .section-subtitle { color: rgba(255,255,255,0.65); margin-top: 6px; }
+
+.admin-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ─── Stats ───────────────────────────────────────────────── */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+.as-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 12px;
+  text-align: center;
+  gap: 6px;
+}
+.as-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+}
+.as-val { font-size: 1.8rem; font-weight: 800; color: var(--navy); }
+.as-label { font-size: 0.78rem; color: var(--gray-500); font-weight: 500; }
+
+/* ─── Tabs ────────────────────────────────────────────────── */
+.admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ─── Overview Charts ─────────────────────────────────────── */
+.admin-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+.admin-chart-card { padding: 24px; }
+.admin-section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 20px;
+}
+
+/* Bar Chart */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 140px;
+  padding-bottom: 24px;
+}
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  position: relative;
+}
+.bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--teal) 0%, #0d9488 100%);
+  border-radius: 6px 6px 0 0;
+  min-height: 4px;
+  position: relative;
+  transition: height 0.5s ease;
+}
+.bar-count {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+.bar-label {
+  position: absolute;
+  bottom: -20px;
+  font-size: 0.7rem;
+  color: var(--gray-400);
+  white-space: nowrap;
+}
+
+/* Busiest Doctors */
+.busiest-list { display: flex; flex-direction: column; gap: 12px; }
+.busiest-row {
+  display: grid;
+  grid-template-columns: 28px 32px 1fr 80px;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.busiest-rank { font-weight: 700; color: var(--gray-400); font-size: 0.85rem; }
+.busiest-avatar { font-size: 1.3rem; }
+.busiest-name { font-weight: 600; font-size: 0.88rem; color: var(--navy); }
+.busiest-spec { font-size: 0.75rem; color: var(--gray-400); }
+.busiest-count { font-weight: 700; font-size: 0.82rem; color: var(--teal); text-align: right; }
+.busiest-bar {
+  position: absolute;
+  bottom: -4px;
+  left: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--teal), transparent);
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* Status Breakdown */
+.status-breakdown { display: flex; flex-direction: column; gap: 14px; }
+.sb-row { display: grid; grid-template-columns: 90px 1fr 40px; align-items: center; gap: 10px; }
+.sb-label { font-size: 0.85rem; font-weight: 600; color: var(--navy); }
+.sb-bar-wrap { height: 8px; background: var(--gray-100); border-radius: 4px; overflow: hidden; }
+.sb-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.sb-count { font-size: 0.85rem; font-weight: 700; color: var(--gray-600); text-align: right; }
+
+/* ─── Table ───────────────────────────────────────────────── */
+.admin-table-wrap { padding: 24px; overflow-x: auto; }
+.admin-table { min-width: 640px; }
+
+.at-header, .at-row {
+  display: grid;
+  padding: 12px 8px;
+  gap: 12px;
+  align-items: center;
+}
+.at-header {
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1.5px solid var(--gray-100);
+  padding-bottom: 10px;
+}
+.at-row {
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--gray-100);
+  font-size: 0.88rem;
+  color: var(--gray-600);
+}
+.at-row:last-child { border-bottom: none; }
+.at-row:hover { background: #f8fafc; }
+
+.at-cell { display: flex; align-items: center; }
+.at-doctor { gap: 10px; }
+.at-name { font-weight: 600; color: var(--navy); font-size: 0.88rem; }
+.at-email { font-size: 0.75rem; color: var(--gray-400); }
+.at-actions { gap: 8px; }
+
+/* ─── Loading ─────────────────────────────────────────────── */
+.admin-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: var(--gray-500);
+}
+.auth-spinner {
+  width: 36px; height: 36px;
+  border: 3.5px solid var(--gray-200);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+@media (max-width: 768px) {
+  .admin-header-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .admin-overview { grid-template-columns: 1fr; }
+}

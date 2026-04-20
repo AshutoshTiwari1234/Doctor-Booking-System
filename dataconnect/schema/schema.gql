@@ -1,0 +1,138 @@
+# ============================================================
+# Firebase Data Connect — PostgreSQL Schema
+# Defines all database tables using GraphQL SDL + @table directive
+# Each type becomes a PostgreSQL table in Cloud SQL
+# ============================================================
+
+# ──────────────────────────────────────────────────────────────
+# USER TABLE
+# Stores both patients, doctors, and admins
+# role field determines access level
+# ──────────────────────────────────────────────────────────────
+type User @table(name: "users", singular: "user", plural: "users") {
+  id: UUID! @default(expr: "uuidV4()")         # Auto-generated primary key
+  uid: String! @col(dataType: "varchar(128)")  # Firebase Auth UID
+  name: String! @col(dataType: "varchar(255)")
+  email: String! @col(dataType: "varchar(255)")
+  role: String! @col(dataType: "varchar(20)")  # "patient" | "doctor" | "admin"
+  phone: String @col(dataType: "varchar(15)")
+  approved: Boolean! @default(expr: "true")    # Doctors need manual approval
+  createdAt: Date! @default(expr: "request.time")
+}
+
+# ──────────────────────────────────────────────────────────────
+# DOCTOR TABLE
+# Extended profile for users with role = 'doctor'
+# Linked back to users table by uid
+# ──────────────────────────────────────────────────────────────
+type Doctor @table(name: "doctors", singular: "doctor", plural: "doctors") {
+  id: UUID! @default(expr: "uuidV4()")
+  uid: String! @col(dataType: "varchar(128)")         # Matches Firebase Auth UID
+  name: String! @col(dataType: "varchar(255)")
+  email: String! @col(dataType: "varchar(255)")
+  specialty: String! @col(dataType: "varchar(100)")
+  hospital: String! @col(dataType: "varchar(255)")
+  location: String! @col(dataType: "varchar(100)")
+  experience: String @col(dataType: "varchar(50)")
+  fee: Int!                                            # Consultation fee in INR
+  about: String @col(dataType: "text")
+  rating: Float @default(expr: "0")
+  reviewCount: Int @default(expr: "0")
+  available: Boolean! @default(expr: "true")
+  approved: Boolean! @default(expr: "false")           # Admin must approve
+  avatar: String @col(dataType: "varchar(10)")         # Emoji avatar char
+  color: String @col(dataType: "varchar(20)")          # Background color
+  languages: String @col(dataType: "text")             # JSON array as string
+  education: String @col(dataType: "varchar(255)")
+  nextSlot: String @col(dataType: "varchar(100)")
+  createdAt: Date! @default(expr: "request.time")
+}
+
+# ──────────────────────────────────────────────────────────────
+# DOCTOR SLOTS TABLE
+# Stores individual available time slots per doctor per date
+# Each row = one bookable slot (deleted when booked)
+# ──────────────────────────────────────────────────────────────
+type DoctorSlot @table(name: "doctor_slots", singular: "doctorSlot", plural: "doctorSlots") {
+  id: UUID! @default(expr: "uuidV4()")
+  doctorId: String! @col(dataType: "varchar(128)") # References Doctor.uid
+  date: Date!                                        # Slot date (YYYY-MM-DD)
+  time: String! @col(dataType: "varchar(20)")        # Slot time e.g. "10:00 AM"
+  isBooked: Boolean! @default(expr: "false")
+  createdAt: Date! @default(expr: "request.time")
+}
+
+# ──────────────────────────────────────────────────────────────
+# APPOINTMENT TABLE
+# Records a booked appointment between patient and doctor
+# ──────────────────────────────────────────────────────────────
+type Appointment @table(name: "appointments", singular: "appointment", plural: "appointments") {
+  id: UUID! @default(expr: "uuidV4()")
+  bookingId: String! @col(dataType: "varchar(20)")    # Human-readable ID e.g. MB123456
+  patientId: String! @col(dataType: "varchar(128)")  # Firebase Auth UID of patient
+  doctorId: String! @col(dataType: "varchar(128)")   # Firebase Auth UID of doctor
+  patientName: String! @col(dataType: "varchar(255)")
+  patientAge: Int
+  patientGender: String @col(dataType: "varchar(10)")
+  patientPhone: String @col(dataType: "varchar(15)")
+  patientEmail: String @col(dataType: "varchar(255)")
+  doctorName: String! @col(dataType: "varchar(255)")
+  doctorSpecialty: String! @col(dataType: "varchar(100)")
+  doctorHospital: String @col(dataType: "varchar(255)")
+  doctorFee: Int
+  date: Date!
+  slot: String! @col(dataType: "varchar(20)")
+  reason: String @col(dataType: "varchar(255)")
+  notes: String @col(dataType: "text")
+  status: String! @col(dataType: "varchar(30)") @default(expr: "'Confirmed'")
+  # Possible values: Confirmed | Completed | Cancelled | Pending | In-Progress
+  token: Int                                          # Queue number for the day
+  reviewed: Boolean! @default(expr: "false")
+  createdAt: Date! @default(expr: "request.time")
+}
+
+# ──────────────────────────────────────────────────────────────
+# REVIEW TABLE
+# Patient reviews submitted after a completed appointment
+# Used to recalculate doctor's average rating
+# ──────────────────────────────────────────────────────────────
+type Review @table(name: "reviews", singular: "review", plural: "reviews") {
+  id: UUID! @default(expr: "uuidV4()")
+  appointmentId: UUID!                               # FK to Appointment
+  patientId: String! @col(dataType: "varchar(128)")
+  doctorId: String! @col(dataType: "varchar(128)")
+  patientName: String @col(dataType: "varchar(255)")
+  rating: Int!                                       # 1 – 5 stars
+  comment: String @col(dataType: "text")
+  createdAt: Date! @default(expr: "request.time")
+}
+
+# ──────────────────────────────────────────────────────────────
+# NOTIFICATION TABLE
+# In-app notification records for patients and doctors
+# ──────────────────────────────────────────────────────────────
+type Notification @table(name: "notifications", singular: "notification", plural: "notifications") {
+  id: UUID! @default(expr: "uuidV4()")
+  userId: String! @col(dataType: "varchar(128)")    # Who receives it
+  message: String! @col(dataType: "text")
+  type: String! @col(dataType: "varchar(20)")       # "success" | "info" | "warning"
+  read: Boolean! @default(expr: "false")
+  createdAt: Date! @default(expr: "request.time")
+}
+
+# ──────────────────────────────────────────────────────────────
+# MEDICAL REPORT TABLE
+# ──────────────────────────────────────────────────────────────
+type MedicalReport @table(name: "medical_reports", singular: "medicalReport", plural: "medicalReports") {
+  id: UUID! @default(expr: "uuidV4()")
+  patientId: String! @col(dataType: "varchar(128)")
+  name: String! @col(dataType: "varchar(255)")
+  type: String! @col(dataType: "varchar(50)")
+  url: String! @col(dataType: "text")
+  publicId: String @col(dataType: "varchar(255)")
+  format: String @col(dataType: "varchar(20)")
+  size: String @col(dataType: "varchar(20)")
+  pages: Int @default(expr: "1")
+  originalName: String @col(dataType: "varchar(255)")
+  createdAt: Date! @default(expr: "request.time")
+}

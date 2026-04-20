@@ -1,11 +1,11 @@
 .appts-page { min-height: 80vh; }
 .appts-header {
-  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+  background: linear-gradient(90deg, #2A6FBC, #2F7FB5, #1F8A8C);
   padding: 60px 24px 40px;
 }
 .appts-header-inner { max-width: 900px; margin: 0 auto; color: white; }
-.appts-header .section-title { color: white; margin-bottom: 8px; }
-.appts-header .section-subtitle { color: rgba(255,255,255,0.65); }
+.appts-header .section-title { color: white; margin-bottom: 8px; padding-left: 0px;}
+.appts-header .section-subtitle { color: rgba(255,255,255,0.65); padding-left: 60px; }
 .appts-inner { max-width: 900px; margin: 0 auto; padding: 32px 24px 60px; }
 
 /* STATS */

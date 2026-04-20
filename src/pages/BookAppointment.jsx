@@ -1,48 +1,133 @@
-import React, { useState } from "react";
+// ============================================================
+// BookAppointment — 3-step booking with slot capacity management
+//
+// Step 1: Calendar (red = full day) + slot selector with
+//         live capacity bar (X/6 taken) + "Full 🔴" state
+// Step 2: Patient info
+// Step 3: Confirm + queue number shown on success
+// ============================================================
+
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAppointments } from "../context/AppointmentsContext";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import {
+  generateDaySlots,
+  generateSlotLabels,
+  generateAvailableDates,
+  getDateLabel,
+  isSlotFull,
+  isDayFull,
+  getSlotBookedCount,
+  getAvailableCount,
+  PATIENTS_PER_HOUR,
+  isSlotPassed,
+} from "../utils/slotUtils";
 import "./BookAppointment.css";
 
 const reasons = [
-  "General Consultation",
-  "Follow-up Visit",
-  "Second Opinion",
-  "Test Results Discussion",
-  "Prescription Renewal",
-  "New Symptoms",
-  "Chronic Disease Management",
-  "Other",
+  "General Consultation", "Follow-up Visit", "Second Opinion",
+  "Test Results Discussion", "Prescription Renewal", "New Symptoms",
+  "Chronic Disease Management", "Other",
 ];
 
-const today = new Date();
-const formatDate = (date) => date.toISOString().split("T")[0];
-const getDateLabel = (dateStr) => {
-  const d = new Date(dateStr + "T00:00:00");
-  const diff = Math.round((d - new Date(formatDate(today) + "T00:00:00")) / 86400000);
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Tomorrow";
-  return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
-};
-
-const getDemoSlots = () => {
-  const slots = {};
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
-    const key = formatDate(d);
-    const allSlots = ["09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
-    const count = 3 + Math.floor(Math.random() * 4);
-    const shuffled = allSlots.sort(() => 0.5 - Math.random()).slice(0, count).sort();
-    slots[key] = shuffled;
-  }
-  return slots;
-};
+const AVAILABLE_DATES = generateAvailableDates(14);
+const DAY_SLOTS = generateDaySlots();
+const SLOT_LABELS = generateSlotLabels();
 
 export default function BookAppointment() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addAppointment } = useAppointments();
+  const { addAppointment, allAppointments } = useAppointments();
+  const { currentUser, userProfile } = useAuth();
   const doctor = location.state?.doctor;
+
+  // Disabled slots set by doctor
+  const [disabledSlots, setDisabledSlots] = useState([]);
+  const [slotsLoaded, setSlotsLoaded] = useState(false);
+  
+  // Fix 6: Load disabled slots from localStorage (set by doctor)
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("medibook_doctor_slots");
+      if (stored) setDisabledSlots(JSON.parse(stored));
+    } catch { /* ignore */ }
+    setSlotsLoaded(true);
+  }, [doctor]);
+
+  // Fix 6: Build slotsMap from DAY_SLOTS minus any disabled slots set by doctor in localStorage
+  const slotsMap = useMemo(() => {
+    const map = {};
+    AVAILABLE_DATES.forEach((d) => {
+      const disabledTimesForDay = disabledSlots
+        .filter((s) => s.date === d)
+        .map((s) => s.time);
+      if (disabledTimesForDay.includes("ALL")) {
+        map[d] = []; // day is fully disabled
+      } else {
+        map[d] = DAY_SLOTS.filter((t) => !disabledTimesForDay.includes(t));
+      }
+    });
+    return map;
+  }, [disabledSlots]);
+
+  const docAvailableDates = useMemo(() => {
+    return AVAILABLE_DATES.filter((d) => {
+      const activeSlots = (slotsMap[d] || []).filter((slot) => !isSlotPassed(d, slot));
+      return activeSlots.length > 0;
+    });
+  }, [slotsMap]);
+
+  const [step, setStep] = useState(1);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedSlot, setSelectedSlot] = useState("");
+
+  // Auto-select the first available date when loaded
+  useEffect(() => {
+    if (docAvailableDates.length > 0 && !selectedDate) {
+      setSelectedDate(docAvailableDates[0]);
+    }
+  }, [docAvailableDates, selectedDate]);
+
+  const [form, setForm] = useState({
+    name: userProfile?.name || "",
+    age: "",
+    gender: "",
+    phone: userProfile?.phone || "",
+    email: currentUser?.email || "",
+    reason: "",
+    notes: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [bookedAppt, setBookedAppt] = useState(null);
+
+  // ─── Slot capacity (memoized from all appointments) ────────────
+  const slotInfo = useMemo(() => {
+    const info = {};
+    const activeSlots = (slotsMap[selectedDate] || []).filter(
+      (slot) => !isSlotPassed(selectedDate, slot)
+    );
+    activeSlots.forEach((slot) => {
+      const booked = getSlotBookedCount(allAppointments, selectedDate, slot);
+      const available = Math.max(0, PATIENTS_PER_HOUR - booked);
+      const full = booked >= PATIENTS_PER_HOUR;
+      info[slot] = { booked, available, full };
+    });
+    return info;
+  }, [allAppointments, selectedDate, slotsMap]);
+
+  const dayFull = useMemo(() => {
+    if (!selectedDate) return false;
+    const activeSlots = (slotsMap[selectedDate] || []).filter(
+      (slot) => !isSlotPassed(selectedDate, slot)
+    );
+    if (activeSlots.length === 0) return true;
+    return activeSlots.every(
+      (slot) => getSlotBookedCount(allAppointments, selectedDate, slot) >= PATIENTS_PER_HOUR
+    );
+  }, [allAppointments, selectedDate, slotsMap]);
 
   if (!doctor) {
     return (
@@ -51,29 +136,17 @@ export default function BookAppointment() {
           <div className="card" style={{ padding: 60, textAlign: "center" }}>
             <div style={{ fontSize: "3rem", marginBottom: 16 }}>⚠️</div>
             <h2 style={{ color: "var(--navy)", marginBottom: 8 }}>No Doctor Selected</h2>
-            <p style={{ color: "var(--gray-600)", marginBottom: 24 }}>Please go back and select a doctor first.</p>
-            <button className="btn btn-primary" onClick={() => navigate("/doctors")}>Browse Doctors →</button>
+            <p style={{ color: "var(--gray-600)", marginBottom: 24 }}>
+              Please go back and select a doctor first.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate("/doctors")}>
+              Browse Doctors →
+            </button>
           </div>
         </div>
       </div>
     );
   }
-
-  const handleNavigate = (p) => {
-    navigate(p === "home" ? "/" : "/" + p);
-    window.scrollTo(0, 0);
-  };
-
-  const allSlots = doctor.slots || getDemoSlots();
-  const availableDates = Object.keys(allSlots).sort();
-
-  const [step, setStep] = useState(1);
-  const [selectedDate, setSelectedDate] = useState(availableDates[0] || "");
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [form, setForm] = useState({ name: "", age: "", gender: "", phone: "", email: "", reason: "", notes: "" });
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
 
   const validate = () => {
     const e = {};
@@ -102,61 +175,54 @@ export default function BookAppointment() {
     }
   };
 
-  const handleSubmit = () => {
+  // ─── Submit booking ─────────────────────────────────────────
+  const handleSubmit = async () => {
     setSubmitting(true);
-    setTimeout(() => {
-      addAppointment({
-        doctor,
+    try {
+      if (!currentUser?.uid) {
+        throw new Error("Auth session expired. Please refresh.");
+      }
+
+      console.log("[BookAppointment] Submitting appointment with patient UID:", currentUser.uid);
+
+      const result = await addAppointment({
+        doctorId: String(doctor.id || doctor.uid),
+        doctorName: doctor.name,
+        doctorSpecialty: doctor.specialty,
+        doctorHospital: doctor.hospital,
+        doctorFee: doctor.fee,
         date: selectedDate,
         slot: selectedSlot,
-        patient: form,
-        status: "Confirmed",
-        bookingId: "MB" + Math.floor(100000 + Math.random() * 900000),
+        patientId: currentUser.uid,
+        patientName: form.name,
+        patientAge: Number(form.age),
+        patientGender: form.gender,
+        patientPhone: form.phone,
+        patientEmail: form.email,
+        reason: form.reason,
+        notes: form.notes,
       });
+      // Schedule appointment-day reminder notification (if permission granted)
+      scheduleAppointmentReminder(form.name, doctor.name, selectedDate, selectedSlot);
+
+      // Navigate to appointments with a success flag
+      navigate("/appointments", { 
+        state: { 
+          bookingSuccess: true, 
+          newApptId: result.bookingId || result.id,
+          doctorName: doctor.name
+        } 
+      });
+    } catch (err) {
+      toast.error(err.message || "Booking failed. Please try again.");
+    } finally {
       setSubmitting(false);
-      setDone(true);
-    }, 1500);
+    }
   };
 
-  if (done) {
-    return (
-      <div className="book-page">
-        <div className="book-inner">
-          <div className="success-card card animate-fade-up">
-            <div className="success-icon">✅</div>
-            <h2 className="success-title">Appointment Confirmed!</h2>
-            <p className="success-sub">Your appointment has been booked successfully. You will receive a confirmation shortly.</p>
-            <div className="success-details">
-              <div className="sd-row">
-                <span>Doctor</span>
-                <strong>{doctor.name}</strong>
-              </div>
-              <div className="sd-row">
-                <span>Specialty</span>
-                <strong>{doctor.specialty}</strong>
-              </div>
-              <div className="sd-row">
-                <span>Date & Time</span>
-                <strong>{getDateLabel(selectedDate)}, {selectedSlot}</strong>
-              </div>
-              <div className="sd-row">
-                <span>Patient</span>
-                <strong>{form.name}</strong>
-              </div>
-              <div className="sd-row">
-                <span>Consultation Fee</span>
-                <strong>₹{doctor.fee}</strong>
-              </div>
-            </div>
-            <div className="success-actions">
-              <button className="btn btn-primary" onClick={() => handleNavigate("appointments")}>View My Appointments →</button>
-              <button className="btn btn-outline" onClick={() => handleNavigate("doctors")}>Book Another</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
+
+  const slotLabelForSelected = SLOT_LABELS.find((s) => s.slot === selectedSlot);
 
   return (
     <div className="book-page">
@@ -185,60 +251,124 @@ export default function BookAppointment() {
             <div className="bdc-detail">⏳ {doctor.experience} experience</div>
             <div className="bdc-detail">🎓 {doctor.education}</div>
             <div className="divider"></div>
-            <div className="stars" style={{ justifyContent: "center", marginBottom: 6 }}>
+            <div style={{ display: "flex", justifyContent: "center", gap: 2, marginBottom: 6 }}>
               {"★★★★★".split("").map((s, si) => (
                 <span key={si} className={si < Math.floor(doctor.rating) ? "star" : "star-empty"}>{s}</span>
               ))}
             </div>
             <div style={{ color: "var(--gray-400)", fontSize: "0.82rem", textAlign: "center", marginBottom: 16 }}>
-              {doctor.rating} ({doctor.reviews} reviews)
+              {doctor.rating} ({doctor.reviews || doctor.reviewCount} reviews)
             </div>
             <div className="bdc-fee-box">
               <div className="bdc-fee-label">Consultation Fee</div>
               <div className="bdc-fee">₹{doctor.fee}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--gray-500)", marginTop: 4 }}>
+                6 patients per hour · 10 min each
+              </div>
             </div>
           </div>
 
           {/* RIGHT: STEPS */}
           <div className="book-form-area">
-            {/* STEP 1: SLOT */}
+            {/* ── STEP 1: DATE + SLOT ── */}
             {step === 1 && (
               <div className="book-step card animate-fade-up">
                 <h2 className="step-title">Choose Your Appointment Slot</h2>
-                <p className="step-sub">Select a date and time that works best for you.</p>
+                <p className="step-sub">
+                  Select an available date and time. Each slot takes up to 6 patients.
+                </p>
 
+                {/* Date selector */}
                 <div className="date-selector">
                   <label className="form-label">📅 Select Date</label>
                   <div className="date-tabs">
-                    {availableDates.map((d) => (
-                      <button
-                        key={d}
-                        className={`date-tab ${selectedDate === d ? "active" : ""}`}
-                        onClick={() => { setSelectedDate(d); setSelectedSlot(""); }}
-                      >
-                        {getDateLabel(d)}
-                      </button>
-                    ))}
+                    {docAvailableDates.length === 0 ? (
+                      <div style={{ color: "var(--gray-500)", fontStyle: "italic", padding: "10px" }}>
+                        This doctor hasn't opened any dates right now.
+                      </div>
+                    ) : (
+                      docAvailableDates.map((d) => {
+                        const disabledTimesForDate = disabledSlots.filter(s => s.date === d).map(s => s.time);
+                        const activeSlots = DAY_SLOTS.filter(slot => !disabledTimesForDate.includes(slot) && !isSlotPassed(d, slot));
+                        const activeSlotsCount = activeSlots.length;
+                        const full = !disabledTimesForDate.includes("ALL") && activeSlotsCount > 0 && activeSlots.every(slot => {
+                          return getSlotBookedCount(allAppointments, d, slot) >= PATIENTS_PER_HOUR;
+                        });
+                        return (
+                          <button
+                            key={d}
+                            className={`date-tab ${selectedDate === d ? "active" : ""} ${full ? "day-full" : ""}`}
+                            onClick={() => { setSelectedDate(d); setSelectedSlot(""); }}
+                            title={full ? "All open slots booked on this day" : ""}
+                          >
+                            {getDateLabel(d)}
+                            {full && <span className="date-full-dot">●</span>}
+                          </button>
+                        );
+                      })
+                    )}
                   </div>
                 </div>
 
-                {selectedDate && (
+                {/* Day fully booked warning */}
+                {dayFull && selectedDate && docAvailableDates.length > 0 && (
+                  <div className="day-full-banner">
+                    📵 All open slots on this day are fully booked. Please select another date.
+                  </div>
+                )}
+
+                {/* Slot selector with capacity */}
+                {selectedDate && !dayFull && (
                   <div className="slot-selector">
                     <label className="form-label">⏰ Available Time Slots</label>
-                    <div className="slots-grid">
-                      {(allSlots[selectedDate] || []).map((slot) => (
-                        <button
-                          key={slot}
-                          className={`slot-btn ${selectedSlot === slot ? "active" : ""}`}
-                          onClick={() => setSelectedSlot(slot)}
-                        >
-                          {slot}
-                        </button>
-                      ))}
+                    <div className="slots-grid-capacity">
+                      {SLOT_LABELS.filter(sl => (slotsMap[selectedDate] || []).includes(sl.slot) && !isSlotPassed(selectedDate, sl.slot)).map(({ slot, label }) => {
+                        const { booked, available, full } = slotInfo[slot] || {};
+                        const pct = Math.round((booked / PATIENTS_PER_HOUR) * 100);
+                        return (
+                          <button
+                            key={slot}
+                            className={`slot-cap-btn
+                              ${selectedSlot === slot ? "active" : ""}
+                              ${full ? "full" : ""}
+                            `}
+                            onClick={() => !full && setSelectedSlot(slot)}
+                            disabled={full}
+                            aria-label={full ? `${slot} full` : `${slot} — ${available} spots left`}
+                          >
+                            <div className="scb-time">{slot}</div>
+                            {full ? (
+                              <div className="scb-full">🔴 Full</div>
+                            ) : (
+                              <>
+                                <div className="scb-count">
+                                  {available}/{PATIENTS_PER_HOUR} open
+                                </div>
+                                <div className="scb-bar">
+                                  <div
+                                    className="scb-fill"
+                                    style={{
+                                      width: `${pct}%`,
+                                      background: pct >= 80 ? "#ef4444" : pct >= 50 ? "#f59e0b" : "#10b981",
+                                    }}
+                                  />
+                                </div>
+                              </>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
-                    {(allSlots[selectedDate] || []).length === 0 && (
-                      <p style={{ color: "var(--gray-400)", fontSize: "0.9rem" }}>No slots available on this date.</p>
-                    )}
+                  </div>
+                )}
+
+                {/* Selected slot info */}
+                {selectedSlot && slotLabelForSelected && (
+                  <div className="selected-slot-info">
+                    ✅ Selected: <strong>{slotLabelForSelected.label}</strong>
+                    &nbsp;·&nbsp; You will be patient <strong>
+                      #{(slotInfo[selectedSlot]?.booked || 0) + 1}
+                    </strong> in this slot
                   </div>
                 )}
 
@@ -246,14 +376,14 @@ export default function BookAppointment() {
                   className="btn btn-primary btn-lg"
                   style={{ width: "100%", justifyContent: "center", marginTop: 24 }}
                   onClick={handleNext}
-                  disabled={!selectedDate || !selectedSlot}
+                  disabled={!selectedDate || !selectedSlot || dayFull}
                 >
                   Continue to Patient Info →
                 </button>
               </div>
             )}
 
-            {/* STEP 2: PATIENT INFO */}
+            {/* ── STEP 2: PATIENT INFO ── */}
             {step === 2 && (
               <div className="book-step card animate-fade-up">
                 <h2 className="step-title">Patient Information</h2>
@@ -262,12 +392,23 @@ export default function BookAppointment() {
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Full Name *</label>
-                    <input className={`form-input ${errors.name ? "input-error" : ""}`} placeholder="Raj Kumar" value={form.name} onChange={(e) => handleChange("name", e.target.value)} />
+                    <input
+                      className={`form-input ${errors.name ? "input-error" : ""}`}
+                      placeholder="Raj Kumar"
+                      value={form.name}
+                      onChange={(e) => handleChange("name", e.target.value)}
+                    />
                     {errors.name && <div className="form-error">{errors.name}</div>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Age *</label>
-                    <input className={`form-input ${errors.age ? "input-error" : ""}`} type="number" placeholder="25" value={form.age} onChange={(e) => handleChange("age", e.target.value)} />
+                    <input
+                      className={`form-input ${errors.age ? "input-error" : ""}`}
+                      type="number"
+                      placeholder="25"
+                      value={form.age}
+                      onChange={(e) => handleChange("age", e.target.value)}
+                    />
                     {errors.age && <div className="form-error">{errors.age}</div>}
                   </div>
                 </div>
@@ -292,19 +433,34 @@ export default function BookAppointment() {
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Mobile Number *</label>
-                    <input className={`form-input ${errors.phone ? "input-error" : ""}`} placeholder="9876543210" value={form.phone} onChange={(e) => handleChange("phone", e.target.value)} maxLength={10} />
+                    <input
+                      className={`form-input ${errors.phone ? "input-error" : ""}`}
+                      placeholder="9876543210"
+                      value={form.phone}
+                      onChange={(e) => handleChange("phone", e.target.value)}
+                      maxLength={10}
+                    />
                     {errors.phone && <div className="form-error">{errors.phone}</div>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Email Address *</label>
-                    <input className={`form-input ${errors.email ? "input-error" : ""}`} placeholder="raj@example.com" value={form.email} onChange={(e) => handleChange("email", e.target.value)} />
+                    <input
+                      className={`form-input ${errors.email ? "input-error" : ""}`}
+                      placeholder="raj@example.com"
+                      value={form.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                    />
                     {errors.email && <div className="form-error">{errors.email}</div>}
                   </div>
                 </div>
 
                 <div className="form-group">
                   <label className="form-label">Reason for Visit *</label>
-                  <select className={`form-select ${errors.reason ? "input-error" : ""}`} value={form.reason} onChange={(e) => handleChange("reason", e.target.value)}>
+                  <select
+                    className={`form-select ${errors.reason ? "input-error" : ""}`}
+                    value={form.reason}
+                    onChange={(e) => handleChange("reason", e.target.value)}
+                  >
                     <option value="">Select a reason...</option>
                     {reasons.map((r) => <option key={r}>{r}</option>)}
                   </select>
@@ -313,7 +469,12 @@ export default function BookAppointment() {
 
                 <div className="form-group">
                   <label className="form-label">Additional Notes (Optional)</label>
-                  <textarea className="form-textarea" placeholder="Describe your symptoms or any specific concerns..." value={form.notes} onChange={(e) => handleChange("notes", e.target.value)} />
+                  <textarea
+                    className="form-textarea"
+                    placeholder="Describe your symptoms or any specific concerns..."
+                    value={form.notes}
+                    onChange={(e) => handleChange("notes", e.target.value)}
+                  />
                 </div>
 
                 <div className="step-footer">
@@ -325,7 +486,7 @@ export default function BookAppointment() {
               </div>
             )}
 
-            {/* STEP 3: CONFIRM */}
+            {/* ── STEP 3: CONFIRM ── */}
             {step === 3 && (
               <div className="book-step card animate-fade-up">
                 <h2 className="step-title">Confirm Your Appointment</h2>
@@ -334,23 +495,36 @@ export default function BookAppointment() {
                 <div className="confirm-section">
                   <h4 className="confirm-label">📅 Appointment Details</h4>
                   <div className="confirm-grid">
-                    <div className="confirm-row"><span>Doctor</span><strong>{doctor.name}</strong></div>
-                    <div className="confirm-row"><span>Specialty</span><strong>{doctor.specialty}</strong></div>
-                    <div className="confirm-row"><span>Hospital</span><strong>{doctor.hospital}</strong></div>
-                    <div className="confirm-row"><span>Date</span><strong>{getDateLabel(selectedDate)}</strong></div>
-                    <div className="confirm-row"><span>Time</span><strong>{selectedSlot}</strong></div>
+                    {[
+                      ["Doctor", doctor.name],
+                      ["Specialty", doctor.specialty],
+                      ["Hospital", doctor.hospital],
+                      ["Date", getDateLabel(selectedDate)],
+                      ["Time Slot", selectedSlot],
+                      ["Your Position", `#${(slotInfo[selectedSlot]?.booked || 0) + 1} in queue`],
+                    ].map(([label, val]) => (
+                      <div className="confirm-row" key={label}>
+                        <span>{label}</span><strong>{val}</strong>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
                 <div className="confirm-section">
                   <h4 className="confirm-label">👤 Patient Details</h4>
                   <div className="confirm-grid">
-                    <div className="confirm-row"><span>Name</span><strong>{form.name}</strong></div>
-                    <div className="confirm-row"><span>Age / Gender</span><strong>{form.age} yrs / {form.gender}</strong></div>
-                    <div className="confirm-row"><span>Mobile</span><strong>{form.phone}</strong></div>
-                    <div className="confirm-row"><span>Email</span><strong>{form.email}</strong></div>
-                    <div className="confirm-row"><span>Reason</span><strong>{form.reason}</strong></div>
-                    {form.notes && <div className="confirm-row"><span>Notes</span><strong>{form.notes}</strong></div>}
+                    {[
+                      ["Name", form.name],
+                      ["Age / Gender", `${form.age} yrs / ${form.gender}`],
+                      ["Mobile", form.phone],
+                      ["Email", form.email],
+                      ["Reason", form.reason],
+                      ...(form.notes ? [["Notes", form.notes]] : []),
+                    ].map(([label, val]) => (
+                      <div className="confirm-row" key={label}>
+                        <span>{label}</span><strong>{val}</strong>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -368,7 +542,11 @@ export default function BookAppointment() {
 
                 <div className="step-footer">
                   <button className="btn btn-outline" onClick={() => setStep(2)}>← Edit Info</button>
-                  <button className="btn btn-teal btn-lg" onClick={handleSubmit} disabled={submitting}>
+                  <button
+                    className="btn btn-teal btn-lg"
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                  >
                     {submitting ? "Booking..." : "✅ Confirm Booking"}
                   </button>
                 </div>
@@ -379,4 +557,23 @@ export default function BookAppointment() {
       </div>
     </div>
   );
+}
+
+// ─── Schedule appointment-day FCM reminder ─────────────────────
+function scheduleAppointmentReminder(patientName, doctorName, date, slot) {
+  try {
+    const apptDate = new Date(date + "T08:00:00");
+    const now = new Date();
+    const delay = apptDate - now;
+    if (delay > 0 && delay < 7 * 24 * 60 * 60 * 1000) {
+      setTimeout(() => {
+        if (Notification.permission === "granted") {
+          new Notification("📅 Appointment Reminder", {
+            body: `You have an appointment with ${doctorName} today at ${slot}. Please be on time!`,
+            icon: "/favicon.ico",
+          });
+        }
+      }, delay);
+    }
+  } catch { /* ignore */ }
 }

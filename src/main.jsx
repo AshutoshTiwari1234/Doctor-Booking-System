@@ -1,17 +1,25 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
-import { AppointmentsProvider } from './context/AppointmentsContext'
-import './index.css'
-import App from './App.jsx'
+// ============================================================
+// main.jsx — Application Entry Point
+// Provider hierarchy: BrowserRouter → AuthProvider → AppointmentsProvider → App
+// ============================================================
 
-createRoot(document.getElementById('root')).render(
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { AppointmentsProvider } from "./context/AppointmentsContext";
+import "./index.css";
+import App from "./App.jsx";
 
-    <StrictMode>
-  <BrowserRouter>
-    <AppointmentsProvider>
-      <App />
-    </AppointmentsProvider>
-  </BrowserRouter>
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <BrowserRouter>
+      {/* AuthProvider must wrap AppointmentsProvider since appointments depends on currentUser */}
+      <AuthProvider>
+        <AppointmentsProvider>
+          <App />
+        </AppointmentsProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </StrictMode>
-)
+);

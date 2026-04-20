@@ -1,0 +1,352 @@
+# ============================================================
+# GraphQL Queries — Read operations for the Doctor Appointment app
+# These are translated to SQL SELECT statements by Data Connect
+# Authentication is enforced via @auth directives
+# ============================================================
+
+# ──────────────────────────────────────────────────────────────
+# DOCTOR QUERIES
+# ──────────────────────────────────────────────────────────────
+
+# Fetch all approved doctors (public — used on Doctors listing page)
+query ListApprovedDoctors @auth(level: PUBLIC) {
+  doctors(where: { approved: { eq: true } }, orderBy: [{ rating: DESC }]) {
+    id
+    uid
+    name
+    email
+    specialty
+    hospital
+    location
+    experience
+    fee
+    about
+    rating
+    reviewCount
+    available
+    avatar
+    color
+    languages
+    education
+    nextSlot
+    approved
+  }
+}
+
+# Search doctors by specialty
+query ListDoctorsBySpecialty($specialty: String!) @auth(level: PUBLIC) {
+  doctors(where: { specialty: { eq: $specialty }, approved: { eq: true } }) {
+    id
+    uid
+    name
+    specialty
+    hospital
+    location
+    fee
+    rating
+    reviewCount
+    available
+    avatar
+    color
+    nextSlot
+  }
+}
+
+# Search doctors by location
+query ListDoctorsByLocation($location: String!) @auth(level: PUBLIC) {
+  doctors(where: { location: { contains: $location }, approved: { eq: true } }) {
+    id
+    uid
+    name
+    specialty
+    hospital
+    location
+    fee
+    rating
+    available
+    avatar
+    color
+  }
+}
+
+# Get a single doctor's full profile
+query GetDoctorById($uid: String!) @auth(level: PUBLIC) {
+  doctors(where: { uid: { eq: $uid } }) {
+    id
+    uid
+    name
+    specialty
+    hospital
+    location
+    experience
+    fee
+    about
+    rating
+    reviewCount
+    available
+    avatar
+    color
+    languages
+    education
+    nextSlot
+    approved
+  }
+}
+
+# Get all doctors (admin use — all statuses including pending)
+query ListAllDoctors @auth(level: USER) {
+  doctors(orderBy: [{ createdAt: DESC }]) {
+    id
+    uid
+    name
+    email
+    specialty
+    hospital
+    location
+    fee
+    rating
+    reviewer: reviewCount
+    available
+    approved
+    avatar
+    createdAt
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# DOCTOR SLOT QUERIES
+# ──────────────────────────────────────────────────────────────
+
+# Get all available (not yet booked) slots for a doctor on a given date
+query GetAvailableSlots($doctorId: String!, $date: Date!) @auth(level: PUBLIC) {
+  doctorSlots(
+    where: {
+      doctorId: { eq: $doctorId }
+      date: { eq: $date }
+      isBooked: { eq: false }
+    }
+    orderBy: [{ time: ASC }]
+  ) {
+    id
+    time
+    date
+    isBooked
+  }
+}
+
+# Get all slots for a doctor across available dates (for booking page)
+query GetDoctorSlots($doctorId: String!) @auth(level: PUBLIC) {
+  doctorSlots(
+    where: { doctorId: { eq: $doctorId }, isBooked: { eq: false } }
+    orderBy: [{ date: ASC }, { time: ASC }]
+  ) {
+    id
+    date
+    time
+    isBooked
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# APPOINTMENT QUERIES
+# ──────────────────────────────────────────────────────────────
+
+# Patient: get all their own appointments
+query GetMyAppointments($patientId: String!) @auth(level: USER) {
+  appointments(
+    where: { patientId: { eq: $patientId } }
+    orderBy: [{ createdAt: DESC }]
+  ) {
+    id
+    bookingId
+    patientId
+    doctorId
+    patientName
+    patientAge
+    patientGender
+    patientPhone
+    patientEmail
+    doctorName
+    doctorSpecialty
+    doctorHospital
+    doctorFee
+    date
+    slot
+    reason
+    notes
+    status
+    token
+    reviewed
+    createdAt
+  }
+}
+
+# Doctor: get all appointments assigned to them
+query GetDoctorAppointments($doctorId: String!) @auth(level: USER) {
+  appointments(
+    where: { doctorId: { eq: $doctorId } }
+    orderBy: [{ date: ASC }, { slot: ASC }]
+  ) {
+    id
+    bookingId
+    patientId
+    patientName
+    patientAge
+    patientGender
+    patientPhone
+    patientEmail
+    date
+    slot
+    reason
+    notes
+    status
+    token
+    doctorFee
+    reviewed
+  }
+}
+
+# Doctor: get only today's appointments
+query GetTodayAppointments($doctorId: String!, $today: Date!) @auth(level: USER) {
+  appointments(
+    where: { doctorId: { eq: $doctorId }, date: { eq: $today } }
+    orderBy: [{ slot: ASC }]
+  ) {
+    id
+    bookingId
+    patientName
+    patientAge
+    patientGender
+    patientPhone
+    date
+    slot
+    reason
+    notes
+    status
+    token
+    doctorFee
+  }
+}
+
+# Admin: get all appointments in the system
+query GetAllAppointments @auth(level: USER) {
+  appointments(orderBy: [{ createdAt: DESC }]) {
+    id
+    bookingId
+    patientName
+    doctorName
+    doctorSpecialty
+    date
+    slot
+    status
+    doctorFee
+    createdAt
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# USER QUERIES
+# ──────────────────────────────────────────────────────────────
+
+# Get a single user by their Firebase UID
+query GetUserByUid($uid: String!) @auth(level: USER) {
+  users(where: { uid: { eq: $uid } }) {
+    id
+    uid
+    name
+    email
+    role
+    phone
+    approved
+    createdAt
+  }
+}
+
+# Admin: get all users
+query GetAllUsers @auth(level: USER) {
+  users(orderBy: [{ createdAt: DESC }]) {
+    id
+    uid
+    name
+    email
+    role
+    phone
+    approved
+    createdAt
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# REVIEW QUERIES
+# ──────────────────────────────────────────────────────────────
+
+# Get all reviews for a specific doctor (public — for doctor profile page)
+query GetDoctorReviews($doctorId: String!) @auth(level: PUBLIC) {
+  reviews(
+    where: { doctorId: { eq: $doctorId } }
+    orderBy: [{ createdAt: DESC }]
+  ) {
+    id
+    patientName
+    rating
+    comment
+    createdAt
+  }
+}
+
+# Get all reviews by a specific patient
+query GetPatientReviews($patientId: String!) @auth(level: USER) {
+  reviews(where: { patientId: { eq: $patientId } }) {
+    id
+    doctorId
+    rating
+    comment
+    createdAt
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# NOTIFICATION QUERIES
+# ──────────────────────────────────────────────────────────────
+
+# Get unread notifications for a user
+query GetUnreadNotifications($userId: String!) @auth(level: USER) {
+  notifications(
+    where: { userId: { eq: $userId }, read: { eq: false } }
+    orderBy: [{ createdAt: DESC }]
+  ) {
+    id
+    message
+    type
+    read
+    createdAt
+  }
+}
+
+# ──────────────────────────────────────────────────────────────
+# ANALYTICS QUERIES (Admin panel)
+# ──────────────────────────────────────────────────────────────
+
+# Get appointment count by status (for admin analytics)
+# Since Data Connect doesn't support aggregates, we fetch all and count in code
+query GetAppointmentStats @auth(level: USER) {
+  appointments {
+    status
+  }
+}
+
+# Fetch all medical reports for a patient
+query GetPatientReports($patientId: String!) @auth(level: USER) {
+  medicalReports(where: { patientId: { eq: $patientId } }, orderBy: [{ createdAt: DESC }]) {
+    id
+    name
+    type
+    url
+    publicId
+    format
+    size
+    pages
+    originalName
+    createdAt
+  }
+}

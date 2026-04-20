@@ -290,3 +290,140 @@
   .book-progress { padding: 16px; }
   .ps-label { display: none; }
 }
+
+/* ── CAPACITY SLOT GRID ───────────────────────── */
+.slots-grid-capacity {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.slot-cap-btn {
+  padding: 12px 10px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--gray-200);
+  background: var(--white);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.slot-cap-btn:hover:not(.full):not(:disabled) {
+  border-color: var(--blue-light);
+  background: #eff6ff;
+}
+.slot-cap-btn.active {
+  border-color: var(--blue);
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  box-shadow: 0 4px 12px rgba(26,86,219,0.2);
+}
+.slot-cap-btn.full {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: #fff1f1;
+  border-color: #fca5a5;
+}
+.scb-time {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.slot-cap-btn.active .scb-time { color: var(--blue); }
+.scb-count {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  margin-bottom: 6px;
+}
+.slot-cap-btn.active .scb-count { color: var(--blue); opacity: 0.8; }
+.scb-full {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #dc2626;
+  margin-top: 4px;
+}
+.scb-bar {
+  height: 4px;
+  background: var(--gray-200);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.scb-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ── DATE TAB STATES ──────────────────────────── */
+.date-tab.day-full {
+  border-color: #fca5a5;
+  color: #dc2626;
+  background: #fff1f1;
+}
+.date-tab.day-full:hover { background: #fee2e2; }
+.date-tab.day-full.active { background: #dc2626; border-color: #dc2626; color: white; }
+.date-full-dot {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.5rem;
+  vertical-align: middle;
+  color: #dc2626;
+}
+.date-tab.active .date-full-dot { color: rgba(255,255,255,0.6); }
+
+/* ── DAY FULL BANNER ──────────────────────────── */
+.day-full-banner {
+  background: #fff1f1;
+  border: 1px solid #fca5a5;
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* ── SELECTED SLOT INFO ───────────────────────── */
+.selected-slot-info {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: #15803d;
+  margin-top: 16px;
+}
+
+/* ── QUEUE BADGE (success screen) ─────────────── */
+.queue-badge {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 2px solid var(--blue);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 0 auto 24px;
+  max-width: 220px;
+  text-align: center;
+}
+.qb-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--blue);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.qb-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.qb-sub {
+  font-size: 0.78rem;
+  color: var(--gray-500);
+}
+
+@media (max-width: 600px) {
+  .slots-grid-capacity { grid-template-columns: repeat(2, 1fr); }
+}

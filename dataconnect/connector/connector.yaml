@@ -1,0 +1,14 @@
+# ============================================================
+# Connector Configuration — JavaScript SDK Generation
+# Generates a strongly-typed JS SDK from your schema + operations
+# Output goes to: src/dataconnect-sdk/ (imported in your app)
+# ============================================================
+
+connectorId: "doctor-connector"
+
+# Generate a JavaScript/TypeScript SDK for use in the React app
+generate:
+  javascriptSdk:
+    outputDir: "../src/dataconnect-sdk"    # where generated files go
+    package: "@doctor-app/dataconnect"     # package name for imports
+    packageJsonDir: "../"                  # root of the project

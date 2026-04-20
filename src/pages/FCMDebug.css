@@ -1,0 +1,155 @@
+/* ============================================================
+   FCM Debug Page Styles
+   ============================================================ */
+
+.fcm-debug-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.fcm-debug-card {
+  width: 100%;
+  max-width: 660px;
+  background: white;
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header */
+.fcm-debug-header { text-align: center; }
+.fcm-debug-icon { font-size: 3rem; margin-bottom: 8px; }
+.fcm-debug-header h1 {
+  font-size: 1.5rem; font-weight: 900;
+  color: #0f172a; margin-bottom: 6px;
+}
+.fcm-debug-header p { color: #64748b; font-size: 0.9rem; }
+
+/* VAPID section */
+.fcm-vapid-section { display: flex; flex-direction: column; gap: 8px; }
+.vapid-hint {
+  display: block;
+  font-weight: 400; font-size: 0.72rem;
+  color: #94a3b8; margin-top: 3px;
+}
+.vapid-input-row { display: flex; gap: 8px; }
+.vapid-input { flex: 1; font-family: monospace; font-size: 0.8rem; }
+.vapid-missing-warning {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: #92400e;
+  font-weight: 500;
+}
+
+/* Run button */
+.fcm-run-btn { width: 100%; padding: 14px; font-size: 1rem; border-radius: 14px; }
+
+/* Diagnostic steps */
+.fcm-steps { display: flex; flex-direction: column; gap: 8px; }
+
+.fcm-step {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.fcm-step.step-ok    { border-color: #22c55e; background: #f0fdf4; }
+.fcm-step.step-fail  { border-color: #ef4444; background: #fef2f2; }
+.fcm-step.step-loading { border-color: #3b82f6; background: #eff6ff; }
+
+.fcm-step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.fcm-step-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 800; color: #64748b;
+  flex-shrink: 0;
+}
+.step-ok .fcm-step-num { background: #22c55e; color: white; }
+.step-fail .fcm-step-num { background: #ef4444; color: white; }
+.step-loading .fcm-step-num { background: #3b82f6; color: white; }
+
+.fcm-step-icon { font-size: 1rem; flex-shrink: 0; }
+.fcm-step-label { font-size: 0.88rem; font-weight: 600; color: #1e293b; }
+
+.fcm-step-detail {
+  padding: 0 14px 12px 48px;
+  font-size: 0.78rem;
+  color: #475569;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-family: monospace;
+}
+.step-fail .fcm-step-detail { color: #b91c1c; }
+.step-ok .fcm-step-detail   { color: #15803d; }
+
+/* Token result box */
+.fcm-token-result {
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  border: 2px solid #22c55e;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ftr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ftr-title { font-size: 1rem; font-weight: 800; color: #14532d; }
+
+.ftr-token {
+  background: white;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: #166534;
+  word-break: break-all;
+  line-height: 1.5;
+  max-height: 100px;
+  overflow-y: auto;
+  user-select: all;  /* Click to select all */
+}
+
+.ftr-next {
+  font-size: 0.82rem;
+  color: #166534;
+}
+.ftr-next a { color: #16a34a; font-weight: 700; }
+
+/* Reminder */
+.fcm-reminder {
+  background: #fef9c3;
+  border: 1px solid #fde047;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 0.8rem;
+  color: #713f12;
+  line-height: 1.5;
+}
+.fcm-reminder code {
+  background: rgba(0,0,0,0.07);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}

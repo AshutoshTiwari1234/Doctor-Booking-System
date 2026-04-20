@@ -1,0 +1,23 @@
+# ============================================================
+# Firebase Data Connect — Service Configuration
+# Project: doctor-appointment-7705e
+# Service: doctor-appointment-7705e-service
+# Location: asia-southeast1 (matches your Firebase console)
+# ============================================================
+
+specVersion: "v1beta"
+serviceId: "doctor-appointment-7705e-service"
+location: "asia-southeast1"
+
+# Points to the schema directory
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "doctordb"
+      cloudSql:
+        instanceId: "doctor-appointment-7705e"
+
+# Points to the connector(s) directory
+connectorDirs:
+  - "./connector"

@@ -1,0 +1,172 @@
+/* ============================================================
+   Cloudinary Upload Components CSS
+   Used by: ImageUpload, FileUpload, MedicalReportUpload
+   ============================================================ */
+
+/* ─── Image/Avatar Upload ─────────────────────────────────── */
+.img-upload-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+.img-upload-preview {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  group: true;
+}
+.img-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.img-preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: white;
+  font-size: 0.75rem;
+  text-align: center;
+  gap: 4px;
+}
+.img-preview-overlay span:first-child { font-size: 1.3rem; }
+.img-upload-preview:hover .img-preview-overlay { opacity: 1; }
+
+/* Avatar placeholder (no image set) */
+.img-upload-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2.5px dashed var(--gray-300);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  gap: 4px;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  font-size: 0.72rem;
+  text-align: center;
+}
+.img-upload-placeholder:hover {
+  border-color: var(--teal);
+  background: #f0fdfa;
+  color: var(--teal);
+}
+.img-upload-placeholder-icon { font-size: 1.8rem; }
+
+/* Upload progress ring */
+.upload-progress-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.progress-ring {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: conic-gradient(var(--teal) var(--pct, 0%), var(--gray-100) 0%);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.progress-ring::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: white;
+}
+.progress-ring-label {
+  position: relative;
+  z-index: 1;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--teal);
+}
+
+.img-upload-hint { font-size: 0.72rem; color: var(--gray-400); text-align: center; }
+.img-upload-error { font-size: 0.78rem; color: #ef4444; text-align: center; }
+.img-upload-success { font-size: 0.78rem; color: #16a34a; text-align: center; }
+
+/* ─── File/Report Upload ──────────────────────────────────── */
+.file-upload-zone {
+  border: 2px dashed var(--gray-200);
+  border-radius: 14px;
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+.file-upload-zone:hover,
+.file-upload-zone.drag-over {
+  border-color: var(--teal);
+  background: #f0fdfa;
+}
+.file-upload-zone.has-file { border-color: #22c55e; background: #f0fdf4; }
+
+.fuz-icon { font-size: 2rem; margin-bottom: 8px; }
+.fuz-title { font-weight: 700; color: var(--navy); font-size: 0.95rem; margin-bottom: 4px; }
+.fuz-hint { font-size: 0.78rem; color: var(--gray-400); }
+.fuz-types { margin-top: 8px; font-size: 0.72rem; color: var(--gray-300); }
+
+/* File preview card (after upload) */
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 12px;
+  margin-top: 12px;
+}
+.file-preview-icon { font-size: 1.8rem; flex-shrink: 0; }
+.file-preview-info { flex: 1; min-width: 0; }
+.file-preview-name { font-size: 0.88rem; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-preview-meta { font-size: 0.75rem; color: var(--gray-400); margin-top: 2px; }
+.file-preview-remove {
+  background: none; border: none; font-size: 1.1rem; cursor: pointer;
+  color: var(--gray-400); padding: 0; transition: color 0.15s;
+  flex-shrink: 0;
+}
+.file-preview-remove:hover { color: #ef4444; }
+
+/* Download link for existing files */
+.file-download-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 600;
+}
+.file-download-link:hover { text-decoration: underline; }
+
+/* Upload progress bar */
+.upload-progress-bar {
+  height: 6px;
+  background: var(--gray-100);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.upload-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), #10b981);
+  border-radius: 3px;
+  transition: width 0.2s ease;
+}
+
+/* Reports list */
+.reports-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }

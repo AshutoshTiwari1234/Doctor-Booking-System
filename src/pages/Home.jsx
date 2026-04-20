@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { doctors } from "../data/doctors";
+import SymptomChecker from "../components/SymptomChecker";
 import "./Home.css";
 
 export default function Home() {
@@ -164,6 +165,22 @@ onClick={() => handleNavigate("doctors")}
                 <div className="sp-count">{sp.count}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SYMPTOM CHECKER — AI-powered specialty recommender */}
+      <section className="section section-alt">
+        <div className="section-inner">
+          <div className="text-center mb-32">
+            <div className="section-label" style={{ display: "inline-flex" }}>🧠 Smart Feature</div>
+            <h2 className="section-title">Not Sure Which Doctor to See?</h2>
+            <p className="section-subtitle" style={{ margin: "0 auto" }}>
+              Describe your symptoms and our intelligent checker will recommend the right specialist for you.
+            </p>
+          </div>
+          <div style={{ maxWidth: 660, margin: "0 auto" }}>
+            <SymptomChecker />
           </div>
         </div>
       </section>
